@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Be My Valentine 💖</title>
+
+<style>
+* {
+  box-sizing: border-box;
+  font-family: "Comic Sans MS", cursive, sans-serif;
+}
+
+body {
+  margin: 0;
+  height: 100vh;
+  background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.container {
+  text-align: center;
+  width: 100%;
+  max-width: 380px;
+  padding: 20px;
+  position: relative;
+  z-index: 2;
+}
+
+h1 {
+  color: #7a1f3d;
+  font-size: 26px;
+  line-height: 1.3;
+}
+
+/* 🧸 TEDDY */
+.bear {
+  font-size: 90px;
+  margin: 20px 0;
+  position: relative;
+  animation: nervous 1.4s infinite ease-in-out;
+}
+
+.sweat {
+  position: absolute;
+  right: -12px;
+  top: 12px;
+  font-size: 22px;
+  animation: drip 1s infinite;
+}
+
+@keyframes nervous {
+  0%,100% { transform: rotate(0deg); }
+  50% { transform: rotate(1.5deg); }
+}
+
+@keyframes drip {
+  to { transform: translateY(20px); opacity: 0; }
+}
+
+.hug {
+  animation: hug 0.8s infinite;
+}
+
+@keyframes hug {
+  50% { transform: scale(1.1); }
+}
+
+/* BUTTON AREA */
+.buttons {
+  position: relative;
+  height: 260px;
+  margin-top: 30px;
+}
+
+button {
+  width: 150px;
+  padding: 16px;
+  font-size: 18px;
+  border-radius: 40px;
+  border: none;
+  cursor: pointer;
+  position: absolute;
+  transition:
+    left 0.25s ease-out,
+    top 0.25s ease-out,
+    transform 0.25s ease-out;
+  touch-action: none;
+}
+
+#yesBtn {
+  background: #ff4d6d;
+  color: white;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+}
+
+#noBtn {
+  background: #444;
+  color: white;
+  left: 50%;
+  top: 20px;
+  transform: translateX(-50%) scale(1);
+}
+
+.message {
+  font-size: 24px;
+  color: #7a1f3d;
+  margin-top: 20px;
+  display: none;
+}
+
+/* ❤️ HEART CONFETTI */
+.confetti {
+  position: fixed;
+  top: -10px;
+  font-size: 18px;
+  animation: fall linear forwards;
+  z-index: 1;
+}
+
+@keyframes fall {
+  to {
+    transform: translateY(110vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h1>
+    Will you be my Valentine? 💘<br>
+    <small style="font-size:16px; opacity:0.8;">
+      Click no and see 😏
+    </small>
+  </h1>
+
+  <div class="bear" id="bear">
+    🧸
+    <div class="sweat">💦</div>
+  </div>
+
+  <div class="buttons" id="area">
+    <button id="noBtn">No 😳</button>
+    <button id="yesBtn">Yes 💖</button>
+  </div>
+
+  <div class="message" id="message">
+    IT'S A YES!!! 💞🫶🎉
+  </div>
+</div>
+
+<audio id="pop" src="https://assets.mixkit.co/sfx/preview/mixkit-game-click-1114.mp3"></audio>
+<audio id="yay" src="https://assets.mixkit.co/sfx/preview/mixkit-happy-crowd-cheer-975.mp3"></audio>
+
+<script>
+const noBtn = document.getElementById("noBtn");
+const yesBtn = document.getElementById("yesBtn");
+const bear = document.getElementById("bear");
+const message = document.getElementById("message");
+const area = document.getElementById("area");
+const pop = document.getElementById("pop");
+const yay = document.getElementById("yay");
+
+let noX = area.clientWidth / 2 - noBtn.offsetWidth / 2;
+let noY = 20;
+let speed = 35;
+let scale = 1;
+
+function updateNo() {
+  noBtn.style.left = noX + "px";
+  noBtn.style.top = noY + "px";
+  noBtn.style.transform = `translateX(-50%) scale(${scale})`;
+}
+updateNo();
+
+// 🏃‍♂️ Smooth flee
+function flee(px, py) {
+  const rect = noBtn.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+
+  const dx = cx - px;
+  const dy = cy - py;
+  const dist = Math.hypot(dx, dy);
+
+  if (dist < 140 && scale > 0.15) {
+    const angle = Math.atan2(dy, dx);
+    speed += 0.6;
+
+    noX += Math.cos(angle) * speed;
+    noY += Math.sin(angle) * speed;
+
+    noX = Math.max(0, Math.min(area.clientWidth - rect.width, noX));
+    noY = Math.max(0, Math.min(area.clientHeight - rect.height, noY));
+
+    updateNo();
+  }
+}
+
+document.addEventListener("mousemove", e => flee(e.clientX, e.clientY));
+document.addEventListener("touchmove", e => {
+  const t = e.touches[0];
+  flee(t.clientX, t.clientY);
+});
+
+// 😈 If NO is clicked → shrink it
+noBtn.addEventListener("click", () => {
+  pop.play();
+  scale *= 0.75;
+  speed += 10;
+  updateNo();
+
+  if (scale < 0.12) {
+    noBtn.style.pointerEvents = "none";
+    noBtn.style.opacity = "0";
+  }
+});
+
+// 🎉 Confetti
+function confettiBurst(amount) {
+  for (let i = 0; i < amount; i++) {
+    const c = document.createElement("div");
+    c.className = "confetti";
+    c.textContent = "❤️";
+    c.style.left = Math.random() * 100 + "vw";
+    c.style.animationDuration = Math.random() * 2 + 2 + "s";
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 4500);
+  }
+}
+
+// 💖 YES
+yesBtn.addEventListener("click", () => {
+  pop.play();
+  yay.play();
+  bear.classList.add("hug");
+  document.querySelector(".sweat").style.display = "none";
+  message.style.display = "block";
+  yesBtn.style.display = "none";
+  confettiBurst(220);
+});
+</script>
+
+</body>
+</html>
